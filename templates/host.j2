@@ -1,0 +1,11 @@
+{% if item.address is defined or item.1.address is defined %}
+Address = {{ item.address | default(item.1.address) }}
+{% endif %}
+{% if item.ip is defined or item.1.ip is defined %}
+Subnet = {{ item.ip | default(item.1.ip) }}/32
+{% endif %}
+{% if item.port is defined or item.1.port is defined %}
+Port = {{ item.port | default(item.1.port) }}
+{% endif %}
+
+{{ item.rsa_public_key | default(item.1.rsa_public_key) }}

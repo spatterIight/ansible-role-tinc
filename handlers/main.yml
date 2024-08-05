@@ -1,0 +1,7 @@
+---
+- name: Restart Tinc
+  ansible.builtin.service:
+    name: tinc
+    enabled: yes
+    state: restarted
+  tags: ansible-role-tinc

@@ -1,0 +1,7 @@
+{% if item.down_script is defined %}
+{{ item.down_script }}
+{% else %}
+#!/bin/sh
+ip addr del {{ item.ip }}/{{ item.mask }} dev $INTERFACE
+ip link set $INTERFACE down
+{% endif %}

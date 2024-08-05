@@ -1,0 +1,5 @@
+---
+tinc_user: "root"
+tinc_group: "root"
+tinc_directory: "/etc/tinc"
+tinc_networks: []

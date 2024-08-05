@@ -1,0 +1,13 @@
+{% if item.host_name is defined %}
+Name = {{ item.host_name }}
+{% endif %}
+AddressFamily = {{ item.address_family | default("ipv4") }}
+{% if item.interface is defined %}
+Interface = {{ item.interface }}
+{% endif %}
+{% if item.port is defined %}
+Port = {{ item.port }}
+{% endif %}
+{% if item.connect_to is defined %}
+ConnectTo = {{ item.connect_to }}
+{% endif %}

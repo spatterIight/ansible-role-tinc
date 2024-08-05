@@ -1,0 +1,142 @@
+---
+- name: Install the tinc package
+  ansible.builtin.package:
+    name: tinc
+    state: present
+  notify: Restart Tinc
+  tags: ansible-role-tinc
+
+- name: Create the base tinc directory
+  ansible.builtin.file:
+    path: "{{ tinc_directory }}"
+    state: directory
+    mode: "0750"
+    owner: "{{ tinc_user }}"
+    group: "{{ tinc_group }}"
+  notify: Restart Tinc
+  tags: ansible-role-tinc
+
+- name: Create the tinc network name directory
+  ansible.builtin.file:
+    path: "{{ tinc_directory }}/{{ item.network_name }}"
+    state: directory
+    mode: "0750"
+    owner: "{{ tinc_user }}"
+    group: "{{ tinc_group }}"
+  notify: Restart Tinc
+  loop: "{{ tinc_networks }}"
+  tags: ansible-role-tinc
+
+- name: Create the tinc hosts directory
+  ansible.builtin.file:
+    path: "{{ tinc_directory }}/{{ item.network_name }}/hosts"
+    state: directory
+    mode: "0750"
+    owner: "{{ tinc_user }}"
+    group: "{{ tinc_group }}"
+  notify: Restart Tinc
+  loop: "{{ tinc_networks }}"
+  tags: ansible-role-tinc
+
+- name: Write tinc.conf
+  ansible.builtin.template:
+    src: tinc.conf.j2
+    dest: "{{ tinc_directory }}/{{ item.network_name }}/tinc.conf"
+    owner: "{{ tinc_user }}"
+    group: "{{ tinc_group }}"
+    mode: "0644"
+  notify: Restart Tinc
+  loop: "{{ tinc_networks }}"
+  tags: ansible-role-tinc
+
+- name: Write tinc-up
+  ansible.builtin.template:
+    src: tinc-up.j2
+    dest: "{{ tinc_directory }}/{{ item.network_name }}/tinc-up"
+    owner: "{{ tinc_user }}"
+    group: "{{ tinc_group }}"
+    mode: "0755"
+  notify: Restart Tinc
+  loop: "{{ tinc_networks }}"
+  tags: ansible-role-tinc
+
+- name: Write tinc-down
+  ansible.builtin.template:
+    src: tinc-down.j2
+    dest: "{{ tinc_directory }}/{{ item.network_name }}/tinc-down"
+    owner: "{{ tinc_user }}"
+    group: "{{ tinc_group }}"
+    mode: "0755"
+  notify: Restart Tinc
+  loop: "{{ tinc_networks }}"
+  tags: ansible-role-tinc
+
+- name: Write RSA private key if defined
+  ansible.builtin.template:
+    src: rsa_key.priv.j2
+    dest: "{{ tinc_directory }}/{{ item.network_name }}/rsa_key.priv"
+    owner: "{{ tinc_user }}"
+    group: "{{ tinc_group }}"
+    mode: "0644"
+  notify: Restart Tinc
+  when: item.rsa_private_key is defined
+  loop: "{{ tinc_networks }}"
+  tags: ansible-role-tinc
+
+- name: Check if RSA private key exists
+  ansible.builtin.stat:
+    path: "{{ tinc_directory }}/{{ item.network_name }}/rsa_key.priv"
+  register: rsa_private_key
+  loop: "{{ tinc_networks }}"
+  tags: ansible-role-tinc
+
+- name: Generate RSA private key if missing
+  ansible.builtin.shell: "openssl genrsa -out {{ tinc_directory }}/{{ item.network_name }}/rsa_key.priv 4096"
+  when: not rsa_private_key.results[index].stat.exists
+  loop: "{{ tinc_networks }}"
+  loop_control:
+    index_var: index
+  notify: Restart Tinc
+  tags: ansible-role-tinc
+
+- name: Generate RSA public key if undefined
+  ansible.builtin.shell: "openssl rsa -in {{ tinc_directory }}/{{ item.network_name }}/rsa_key.priv -pubout"
+  register: rsa_public_key
+  when: item.rsa_public_key is not defined
+  loop: "{{ tinc_networks }}"
+  tags: ansible-role-tinc
+
+- name: Print RSA public key if generated
+  ansible.builtin.debug:
+    msg: "{{ item.stdout_lines }}"
+  when: not rsa_public_key.skipped
+  loop: "{{ rsa_public_key.results }}"
+  tags: ansible-role-tinc
+
+- name: Trigger role failure
+  ansible.builtin.fail:
+    msg: "Please add the generated RSA public key, printed above, to your tinc_networks variables and re-run"
+  when: not rsa_public_key.skipped
+  tags: ansible-role-tinc
+
+- name: Write a host file
+  ansible.builtin.template:
+    src: host.j2
+    dest: "{{ tinc_directory }}/{{ item.network_name }}/hosts/{{ item.host_name }}"
+    owner: "{{ tinc_user }}"
+    group: "{{ tinc_group }}"
+    mode: "0644"
+  notify: Restart Tinc
+  loop: "{{ tinc_networks }}"
+  tags: ansible-role-tinc
+
+- name: Write more host files
+  ansible.builtin.template:
+    src: host.j2
+    dest: "{{ tinc_directory }}/{{ item.0.network_name }}/hosts/{{ item.1.host_name }}"
+    owner: "{{ tinc_user }}"
+    group: "{{ tinc_group }}"
+    mode: "0644"
+  notify: Restart Tinc
+  loop: "{{ tinc_networks | subelements('hosts') }}"
+  tags: ansible-role-tinc

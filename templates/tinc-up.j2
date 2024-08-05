@@ -1,0 +1,7 @@
+{% if item.up_script is defined %}
+{{ item.up_script }}
+{% else %}
+#!/bin/sh
+ip link set $INTERFACE up
+ip addr add  {{ item.ip }}/{{ item.mask }} dev $INTERFACE
+{% endif %}
