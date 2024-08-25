@@ -1,7 +1,8 @@
 ---
 - name: Restart Tinc
   ansible.builtin.service:
-    name: tinc
+    name: "tinc@{{ item.network_name }}"
     enabled: yes
     state: restarted
+  loop: "{{ tinc_networks }}"
   tags: ansible-role-tinc
