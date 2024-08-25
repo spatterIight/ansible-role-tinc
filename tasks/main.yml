@@ -109,7 +109,7 @@
 - name: Print RSA public key if generated
   ansible.builtin.debug:
     msg: "{{ item.stdout_lines }}"
-  when: not rsa_public_key.skipped
+  when: (not rsa_public_key.skipped) and (item.stdout_lines is defined)
   loop: "{{ rsa_public_key.results }}"
   tags: ansible-role-tinc
 
