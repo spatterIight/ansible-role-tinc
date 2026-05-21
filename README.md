@@ -9,6 +9,7 @@ Install and configure simple Tinc VPN networks
 To use this role simply define, at a minimum, the `tinc_networks` variable and execute the role agaisn't your host(s).
 
 One thing to keep in mind is how this role manages the RSA key-pair:
+
   1. If a private key does not exist AND is not defined in `tinc_networks` it will be generated.
   2. If a public key is not defined it will be generated based on the private key and printed. In this case you must add it your `tinc_networks` definition and re-run the role.
   3. If you do store the private key in Ansible, be sure to store it in an Ansible Vault.
@@ -23,7 +24,8 @@ One thing to keep in mind is how this role manages the RSA key-pair:
 | `tinc_networks`  | []        | A list of dictionaries of networks to configure |
 
 ## Default Playbook
-```
+
+```yaml
 ---
 - hosts: node
   become: true
