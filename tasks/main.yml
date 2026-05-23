@@ -86,40 +86,44 @@
   loop: "{{ tinc_networks }}"
   tags: ansible-role-tinc
 
-- name: Check if RSA private key exists
-  ansible.builtin.stat:
-    path: "{{ tinc_directory }}/{{ item.network_name }}/rsa_key.priv"
-  register: rsa_private_key
-  loop: "{{ tinc_networks }}"
-  tags: ansible-role-tinc
-
 - name: Generate RSA private key if missing
-  ansible.builtin.shell: "openssl genrsa -out {{ tinc_directory }}/{{ item.network_name }}/rsa_key.priv 4096"
-  when: not rsa_private_key.results[index].stat.exists
+  community.crypto.openssl_privatekey:
+    path: "{{ tinc_directory }}/{{ item.network_name }}/rsa_key.priv"
+    size: 4096
+    type: RSA
+    mode: "0600"
   loop: "{{ tinc_networks }}"
-  loop_control:
-    index_var: index
   notify: Restart Tinc
   tags: ansible-role-tinc
 
-- name: Generate RSA public key if undefined
-  ansible.builtin.shell: "openssl rsa -in {{ tinc_directory }}/{{ item.network_name }}/rsa_key.priv -pubout"
-  register: rsa_public_key
-  when: item.rsa_public_key is not defined
+- name: Extract RSA public key if missing
+  community.crypto.openssl_publickey:
+    path: "{{ tinc_directory }}/{{ item.network_name }}/rsa_key.pub"
+    privatekey_path: "{{ tinc_directory }}/{{ item.network_name }}/rsa_key.priv"
   loop: "{{ tinc_networks }}"
+  when: item.rsa_public_key is not defined
+  register: rsa_public_key
   tags: ansible-role-tinc
 
-- name: Print RSA public key if generated
-  ansible.builtin.debug:
-    msg: "{{ item.stdout_lines }}"
-  when: (not rsa_public_key.skipped) and (item.stdout_lines is defined)
+- name: Read generated RSA public key for display
+  ansible.builtin.slurp:
+    src: "{{ tinc_directory }}/{{ item.item.network_name }}/rsa_key.pub"
   loop: "{{ rsa_public_key.results }}"
+  when: item.changed # noqa: no-handler
+  register: rsa_public_key_content
   tags: ansible-role-tinc
 
-- name: Trigger role failure
+- name: Print RSA public key if newly generated
+  ansible.builtin.debug:
+    msg: "{{ item.content | b64decode }}"
+  loop: "{{ rsa_public_key_content.results }}"
+  when: item.content is defined
+  tags: ansible-role-tinc
+
+- name: Trigger role failure if public key needs to be recorded
   ansible.builtin.fail:
     msg: "Please add the generated RSA public key, printed above, to your tinc_networks variables and re-run"
-  when: not rsa_public_key.skipped
+  when: rsa_public_key.results | selectattr('changed') | list | length > 0
   tags: ansible-role-tinc
 
 - name: Write a host file
