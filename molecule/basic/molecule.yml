@@ -40,5 +40,8 @@ provisioner:
   config_options:
     defaults:
       callback_result_format: yaml
+  env:
+    # Workaround for https://github.com/ansible/molecule/issues/4391
+    ANSIBLE_ROLES_PATH: ${MOLECULE_PROJECT_DIRECTORY}/..:/.ansible/roles:/usr/share/ansible/roles:/etc/ansible/roles:~/.ansible/roles
 verifier:
   name: ansible
