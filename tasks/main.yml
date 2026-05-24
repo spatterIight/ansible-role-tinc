@@ -20,6 +20,7 @@
   tags: ansible-role-tinc
 
 - name: Create the tinc network name directory
+  no_log: "{{ tinc_no_log }}"
   ansible.builtin.file:
     path: "{{ tinc_directory }}/{{ item.network_name }}"
     state: directory
@@ -31,6 +32,7 @@
   tags: ansible-role-tinc
 
 - name: Create the tinc hosts directory
+  no_log: "{{ tinc_no_log }}"
   ansible.builtin.file:
     path: "{{ tinc_directory }}/{{ item.network_name }}/hosts"
     state: directory
@@ -42,6 +44,7 @@
   tags: ansible-role-tinc
 
 - name: Write tinc.conf
+  no_log: "{{ tinc_no_log }}"
   ansible.builtin.template:
     src: tinc.conf.j2
     dest: "{{ tinc_directory }}/{{ item.network_name }}/tinc.conf"
@@ -53,6 +56,7 @@
   tags: ansible-role-tinc
 
 - name: Write tinc-up
+  no_log: "{{ tinc_no_log }}"
   ansible.builtin.template:
     src: tinc-up.j2
     dest: "{{ tinc_directory }}/{{ item.network_name }}/tinc-up"
@@ -64,6 +68,7 @@
   tags: ansible-role-tinc
 
 - name: Write tinc-down
+  no_log: "{{ tinc_no_log }}"
   ansible.builtin.template:
     src: tinc-down.j2
     dest: "{{ tinc_directory }}/{{ item.network_name }}/tinc-down"
@@ -75,28 +80,32 @@
   tags: ansible-role-tinc
 
 - name: Write RSA private key if defined
+  no_log: "{{ tinc_no_log }}"
   ansible.builtin.template:
     src: rsa_key.priv.j2
     dest: "{{ tinc_directory }}/{{ item.network_name }}/rsa_key.priv"
     owner: "{{ tinc_user }}"
     group: "{{ tinc_group }}"
-    mode: "0644"
+    mode: "0600"
   notify: Restart Tinc
   when: item.rsa_private_key is defined
   loop: "{{ tinc_networks }}"
   tags: ansible-role-tinc
 
 - name: Generate RSA private key if missing
+  no_log: "{{ tinc_no_log }}"
   community.crypto.openssl_privatekey:
     path: "{{ tinc_directory }}/{{ item.network_name }}/rsa_key.priv"
     size: 4096
     type: RSA
     mode: "0600"
   loop: "{{ tinc_networks }}"
+  when: item.rsa_private_key is not defined
   notify: Restart Tinc
   tags: ansible-role-tinc
 
 - name: Extract RSA public key if missing
+  no_log: "{{ tinc_no_log }}"
   community.crypto.openssl_publickey:
     path: "{{ tinc_directory }}/{{ item.network_name }}/rsa_key.pub"
     privatekey_path: "{{ tinc_directory }}/{{ item.network_name }}/rsa_key.priv"
@@ -106,6 +115,7 @@
   tags: ansible-role-tinc
 
 - name: Read generated RSA public key for display
+  no_log: "{{ tinc_no_log }}"
   ansible.builtin.slurp:
     src: "{{ tinc_directory }}/{{ item.item.network_name }}/rsa_key.pub"
   loop: "{{ rsa_public_key.results }}"
@@ -114,6 +124,7 @@
   tags: ansible-role-tinc
 
 - name: Print RSA public key if newly generated
+  no_log: "{{ tinc_no_log }}"
   ansible.builtin.debug:
     msg: "{{ item.content | b64decode }}"
   loop: "{{ rsa_public_key_content.results }}"
@@ -127,6 +138,7 @@
   tags: ansible-role-tinc
 
 - name: Write a host file
+  no_log: "{{ tinc_no_log }}"
   ansible.builtin.template:
     src: host.j2
     dest: "{{ tinc_directory }}/{{ item.network_name }}/hosts/{{ item.host_name }}"
@@ -138,6 +150,7 @@
   tags: ansible-role-tinc
 
 - name: Write more host files
+  no_log: "{{ tinc_no_log }}"
   ansible.builtin.template:
     src: host.j2
     dest: "{{ tinc_directory }}/{{ item.0.network_name }}/hosts/{{ item.1.host_name }}"

@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: AGPL-3.0-or-later
 ---
 - name: Restart Tinc
+  no_log: "{{ tinc_no_log }}"
   ansible.builtin.service:
     name: "tinc@{{ item.network_name }}"
     enabled: yes

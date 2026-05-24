@@ -6,3 +6,4 @@ tinc_user: "root"
 tinc_group: "root"
 tinc_directory: "/etc/tinc"
 tinc_networks: []
+tinc_no_log: true # Too much text
