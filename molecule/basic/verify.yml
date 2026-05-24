@@ -1,0 +1,50 @@
+# SPDX-FileCopyrightText: 2026 spatterlight
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+---
+- name: Verify Tinc service
+  hosts: all
+  become: true
+  gather_facts: false
+  tasks:
+    - name: Check tinc@testnet service state
+      ansible.builtin.systemd:
+        name: tinc@testnet
+      register: tinc_testnet_service
+
+    - name: Assert tinc@testnet service is active
+      ansible.builtin.assert:
+        that:
+          - tinc_testnet_service.status.ActiveState == 'active'
+        fail_msg: "tinc@testnet is not active (state: {{ tinc_testnet_service.status.ActiveState }})"
+        success_msg: "tinc@testnet is active"
+
+- name: Verify tunnel connectivity peer1 -> peer2
+  hosts: peer1
+  become: true
+  gather_facts: false
+  tasks:
+    - name: Ping peer2 via Tinc
+      ansible.builtin.command: ping -c 3 -W 5 172.24.18.2
+      register: tinc_ping_result
+      changed_when: false
+
+    - name: Assert ping succeeded
+      ansible.builtin.assert:
+        that: tinc_ping_result.rc == 0
+        fail_msg: "Ping from peer1 to peer2 (172.24.18.2) failed"
+
+- name: Verify tunnel connectivity peer2 -> peer1
+  hosts: peer2
+  become: true
+  gather_facts: false
+  tasks:
+    - name: Ping peer1 via Tinc
+      ansible.builtin.command: ping -c 3 -W 5 172.24.18.1
+      register: tinc_ping_result
+      changed_when: false
+
+    - name: Assert ping succeeded
+      ansible.builtin.assert:
+        that: tinc_ping_result.rc == 0
+        fail_msg: "Ping from peer2 to peer1 (172.24.18.1) failed"

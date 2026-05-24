@@ -1,0 +1,69 @@
+# SPDX-FileCopyrightText: 2026 spatterlight
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+---
+- name: Gather RSA key facts from all hosts
+  hosts: all
+  become: true
+  gather_facts: false
+  tasks:
+    - name: Read RSA private key from temp file
+      ansible.builtin.slurp:
+        src: /tmp/tinc_rsa_key.priv
+      register: tinc_priv_b64
+
+    - name: Read RSA public key from temp file
+      ansible.builtin.slurp:
+        src: /tmp/tinc_rsa_key.pub
+      register: tinc_pub_b64
+
+    - name: Set RSA key facts
+      ansible.builtin.set_fact:
+        tinc_private_key: "{{ tinc_priv_b64.content | b64decode | trim }}"
+        tinc_public_key: "{{ tinc_pub_b64.content | b64decode | trim }}"
+
+- name: Configure Tinc on peer1
+  hosts: peer1
+  become: true
+  gather_facts: false
+  vars:
+    peer2_host: "{{ groups['peer2'][0] }}"
+    tinc_networks:
+      - network_name: testnet
+        host_name: peer1
+        interface: tun0
+        ip: "172.24.18.1"
+        mask: "24"
+        connect_to: peer2
+        rsa_private_key: "{{ hostvars[inventory_hostname]['tinc_private_key'] }}"
+        rsa_public_key: "{{ hostvars[inventory_hostname]['tinc_public_key'] }}"
+        hosts:
+          - host_name: peer2
+            address: "{{ peer2_host }}"
+            ip: "172.24.18.2"
+            rsa_public_key: "{{ hostvars[peer2_host]['tinc_public_key'] }}"
+  roles:
+    - role: "{{ lookup('env', 'MOLECULE_PROJECT_DIRECTORY') | basename }}"
+
+- name: Configure Tinc on peer2
+  hosts: peer2
+  become: true
+  gather_facts: false
+  vars:
+    peer1_host: "{{ groups['peer1'][0] }}"
+    tinc_networks:
+      - network_name: testnet
+        host_name: peer2
+        interface: tun0
+        ip: "172.24.18.2"
+        mask: "24"
+        connect_to: peer1
+        rsa_private_key: "{{ hostvars[inventory_hostname]['tinc_private_key'] }}"
+        rsa_public_key: "{{ hostvars[inventory_hostname]['tinc_public_key'] }}"
+        hosts:
+          - host_name: peer1
+            address: "{{ peer1_host }}"
+            ip: "172.24.18.1"
+            rsa_public_key: "{{ hostvars[peer1_host]['tinc_public_key'] }}"
+  roles:
+    - role: "{{ lookup('env', 'MOLECULE_PROJECT_DIRECTORY') | basename }}"

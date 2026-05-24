@@ -65,3 +65,9 @@ One thing to keep in mind is how this role manages the RSA key-pair:
                 EOCLzLbeS6SiUqVN7YOy85qN2IkKLYezGwIDAQAB
                 -----END RSA PUBLIC KEY-----
 ```
+
+## Molecule
+
+This role supports [Molecule](https://docs.ansible.com/projects/molecule/), an Ansible testing framework designed for developing and testing Ansible collections, playbooks, and roles.
+
+Refer to [this page](./molecule/README.md) for details about how to utilize it.
