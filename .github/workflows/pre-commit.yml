@@ -32,7 +32,7 @@ jobs:
         run: pacman -S --noconfirm --needed just mise python ansible-core
 
       - name: Install Ansible collections
-        run: ansible-galaxy collection install -r molecule/basic/requirements.yml
+        run: ansible-galaxy collection install -r molecule/default/requirements.yml
 
       - name: Run prek hooks
         run: |
