@@ -32,7 +32,7 @@ pip3 install -r ./molecule/requirements.txt
 
 Currently there is one testing scenario available.
 
-### `basic`
+### `default`
 
 Tests a Tinc VPN installation with two peers configured to connect to each other over a Docker bridge network.
 
@@ -41,12 +41,12 @@ Tests a Tinc VPN installation with two peers configured to connect to each other
 By default it is configured to run the scenario on Ubuntu 26.04.
 
 ```bash
-molecule test --scenario-name basic
+molecule test --scenario-name default
 ```
 
 You can utilize other distributions by setting one to the `MOLECULE_DISTRO` environment variable:
 
 ```bash
 # Debian 13
-MOLECULE_DISTRO=debian13 molecule test --scenario-name basic
+MOLECULE_DISTRO=debian13 molecule test --scenario-name default
 ```
