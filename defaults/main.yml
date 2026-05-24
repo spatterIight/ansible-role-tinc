@@ -1,5 +1,9 @@
+# SPDX-FileCopyrightText: 2024 spatterlight
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
 ---
 tinc_user: "root"
 tinc_group: "root"
 tinc_directory: "/etc/tinc"
 tinc_networks: []
+tinc_no_log: true # Too much text

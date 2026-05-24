@@ -1,10 +1,20 @@
 ---
 galaxy_info:
-  author: spatterlight <spatterlight@spatterlight.space>
-  description: Install and configure simple Tinc VPN networks
-  license: MIT
-  min_ansible_version: 2.4
-  galaxy_tags:
-    - ansible-role-tinc
-
-dependencies: []
+  author: spatterlight
+  role_name: tinc
+  description: An Ansible role for installing simple Tinc VPN networks
+  platforms:
+    - name: Debian
+      versions:
+        - all
+    - name: Ubuntu
+      versions:
+        - all
+    - name: ArchLinux
+      versions:
+        - all
+    - name: EL
+      versions:
+        - all
+  license: AGPL-3.0-or-later
+  min_ansible_version: "2.1"

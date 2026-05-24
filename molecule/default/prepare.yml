@@ -1,0 +1,40 @@
+# SPDX-FileCopyrightText: 2026 spatterlight
+#
+# SPDX-License-Identifier: AGPL-3.0-or-later
+---
+- name: Prepare Tinc Molecule tests
+  hosts: all
+  become: true
+  gather_facts: true
+  tasks:
+    - name: Ensure apt cache is updated for Tinc Molecule tests preparation
+      ansible.builtin.apt:
+        update_cache: true
+        cache_valid_time: 600
+      when: ansible_os_family == 'Debian'
+      changed_when: false
+
+    - name: Ensure ping utility is installed for Tinc Molecule tests preparation
+      ansible.builtin.package:
+        name: iputils-ping
+        state: present
+      when: ansible_os_family == 'Debian'
+
+    - name: Ensure IP forwarding is enabled for Tinc Molecule tests preparation
+      ansible.posix.sysctl:
+        name: net.ipv4.ip_forward
+        value: '1'
+        state: present
+        reload: true
+
+    - name: Generate RSA private key for Tinc Molecule tests preparation
+      community.crypto.openssl_privatekey:
+        path: /tmp/tinc_rsa_key.priv
+        size: 4096
+        type: RSA
+        mode: "0600"
+
+    - name: Extract RSA public key for Tinc Molecule tests preparation
+      community.crypto.openssl_publickey:
+        path: /tmp/tinc_rsa_key.pub
+        privatekey_path: /tmp/tinc_rsa_key.priv
