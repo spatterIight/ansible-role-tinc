@@ -2,14 +2,14 @@
 #
 # SPDX-License-Identifier: AGPL-3.0-or-later
 ---
-- name: Install the tinc package
+- name: Ensure Tinc package is installed
   ansible.builtin.package:
     name: tinc
     state: present
   notify: Restart Tinc
   tags: ansible-role-tinc
 
-- name: Create the base tinc directory
+- name: Ensure Tinc base directory exists
   ansible.builtin.file:
     path: "{{ tinc_directory }}"
     state: directory
@@ -19,7 +19,7 @@
   notify: Restart Tinc
   tags: ansible-role-tinc
 
-- name: Create the tinc network name directory
+- name: Ensure Tinc network name directory exists
   no_log: "{{ tinc_no_log }}"
   ansible.builtin.file:
     path: "{{ tinc_directory }}/{{ item.network_name }}"
@@ -31,7 +31,7 @@
   loop: "{{ tinc_networks }}"
   tags: ansible-role-tinc
 
-- name: Create the tinc hosts directory
+- name: Ensure Tinc hosts directory exists
   no_log: "{{ tinc_no_log }}"
   ansible.builtin.file:
     path: "{{ tinc_directory }}/{{ item.network_name }}/hosts"
@@ -43,7 +43,7 @@
   loop: "{{ tinc_networks }}"
   tags: ansible-role-tinc
 
-- name: Write tinc.conf
+- name: Ensure tinc.conf is present
   no_log: "{{ tinc_no_log }}"
   ansible.builtin.template:
     src: tinc.conf.j2
@@ -55,7 +55,7 @@
   loop: "{{ tinc_networks }}"
   tags: ansible-role-tinc
 
-- name: Write tinc-up
+- name: Ensure tinc-up is present
   no_log: "{{ tinc_no_log }}"
   ansible.builtin.template:
     src: tinc-up.j2
@@ -67,7 +67,7 @@
   loop: "{{ tinc_networks }}"
   tags: ansible-role-tinc
 
-- name: Write tinc-down
+- name: Ensure tinc-down is present
   no_log: "{{ tinc_no_log }}"
   ansible.builtin.template:
     src: tinc-down.j2
@@ -79,7 +79,7 @@
   loop: "{{ tinc_networks }}"
   tags: ansible-role-tinc
 
-- name: Write RSA private key if defined
+- name: Ensure Tinc RSA private key is present if defined
   no_log: "{{ tinc_no_log }}"
   ansible.builtin.template:
     src: rsa_key.priv.j2
@@ -92,7 +92,7 @@
   loop: "{{ tinc_networks }}"
   tags: ansible-role-tinc
 
-- name: Generate RSA private key if missing
+- name: Generate Tinc RSA private key if missing
   no_log: "{{ tinc_no_log }}"
   community.crypto.openssl_privatekey:
     path: "{{ tinc_directory }}/{{ item.network_name }}/rsa_key.priv"
@@ -104,7 +104,7 @@
   notify: Restart Tinc
   tags: ansible-role-tinc
 
-- name: Extract RSA public key if missing
+- name: Generate Tinc RSA public key if missing
   no_log: "{{ tinc_no_log }}"
   community.crypto.openssl_publickey:
     path: "{{ tinc_directory }}/{{ item.network_name }}/rsa_key.pub"
@@ -114,7 +114,7 @@
   register: rsa_public_key
   tags: ansible-role-tinc
 
-- name: Read generated RSA public key for display
+- name: Check Tinc RSA public key content for display
   no_log: "{{ tinc_no_log }}"
   ansible.builtin.slurp:
     src: "{{ tinc_directory }}/{{ item.item.network_name }}/rsa_key.pub"
@@ -123,7 +123,7 @@
   register: rsa_public_key_content
   tags: ansible-role-tinc
 
-- name: Print RSA public key if newly generated
+- name: Print Tinc RSA public key if newly generated
   no_log: "{{ tinc_no_log }}"
   ansible.builtin.debug:
     msg: "{{ item.content | b64decode }}"
@@ -131,13 +131,13 @@
   when: item.content is defined
   tags: ansible-role-tinc
 
-- name: Trigger role failure if public key needs to be recorded
+- name: Fail if Tinc RSA public key needs to be recorded
   ansible.builtin.fail:
     msg: "Please add the generated RSA public key, printed above, to your tinc_networks variables and re-run"
   when: rsa_public_key.results | selectattr('changed') | list | length > 0
   tags: ansible-role-tinc
 
-- name: Write a host file
+- name: Ensure Tinc host file is present
   no_log: "{{ tinc_no_log }}"
   ansible.builtin.template:
     src: host.j2
@@ -149,7 +149,7 @@
   loop: "{{ tinc_networks }}"
   tags: ansible-role-tinc
 
-- name: Write more host files
+- name: Ensure Tinc additional host files are present
   no_log: "{{ tinc_no_log }}"
   ansible.builtin.template:
     src: host.j2
