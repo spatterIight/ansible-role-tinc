@@ -6,7 +6,7 @@
   no_log: "{{ tinc_no_log }}"
   ansible.builtin.service:
     name: "tinc@{{ item.network_name }}"
-    enabled: yes
+    enabled: true
     state: restarted
   loop: "{{ tinc_networks }}"
   tags: ansible-role-tinc
