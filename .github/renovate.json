@@ -1,34 +1,6 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": [
-    "config:recommended",
-    ":semanticCommitsDisabled"
-  ],
-  "labels": [
-    "dependencies"
-  ],
-  "packageRules": [
-    {
-      "matchFileNames": [
-        ".github/workflows/autotag.yml",
-        ".github/workflows/molecule.yml",
-        ".github/workflows/pre-commit.yml",
-        ".pre-commit-config.yaml",
-        "mise.toml",
-        "molecule/**/requirements.yml",
-        "molecule/requirements.txt"
-      ],
-      "enabled": true,
-      "automerge": true,
-      "automergeType": "branch",
-      "schedule": ["* * 1 */6 *"],
-      "automergeSchedule": ["* * 1-3 */6 *"]
-    }
-  ],
-  "pre-commit": {
-    "enabled": true
-  },
-  "pyenv": {
-    "enabled": true
-  }
+    "github>mother-of-all-self-hosting/renovate-config#v1.1.0"
+  ]
 }
